@@ -1,5 +1,6 @@
 package com.springexample.initialexample.user;
 
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,11 @@ public class UserController {
 
     @RequestMapping(path = "/users/{id}", method = RequestMethod.GET)
     public User findUser(@PathVariable int id) {
-        return userService.findOne(id);
+        User user = userService.findOne(id);
+        if (null == user){
+            throw  new UserNotFoundException("Id: " + id);
+        }
+        return user;
     }
 
     @RequestMapping(path = "/users", method = RequestMethod.POST)

@@ -11,6 +11,8 @@
     - [Path parameters](#path-parameters)
     - [Creating a user object and service](#creating-a-user-object-and-service)
     - [Creating a controller class for the same.](#creating-a-controller-class-for-the-same)
+    - [Custom exception handling](#custom-exception-handling)
+    - [Custom exception object for all exceptions](#custom-exception-object-for-all-exceptions)
 
 # springboot springcloud alpha
 
@@ -315,5 +317,72 @@ public class UserDAOService {
                 .buildAndExpand(savedUser.getId())
                 .toUri();
         return ResponseEntity.created(location).build();
+    }
+```
+
+### Custom exception handling
+
+- We can create a custom exception and annotate with `@ResponseStatus()` to throw the required exception status.
+- While considering an user not found exception when a specific user id is passed, we can through UserNotFoundException.
+
+```java
+//UserNotFoundException.java
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(String message) {
+        super(message);
+    }
+}
+```
+
+- The above can be invoke as
+
+```java
+@RequestMapping(path = "/users/{id}", method = RequestMethod.GET)
+    public User findUser(@PathVariable int id) {
+        User user = userService.findOne(id);
+        if (null == user){
+            throw  new UserNotFoundException("Id: " + id);
+        }
+        return user;
+    }
+```
+
+### Custom exception object for all exceptions
+
+- Create exception object
+- ResponseExceptionEntityHandler is a class which can be used to handle exceptions all over your application.
+- Create a class and extend ResponseExceptionEntityHandler.
+- Annotate it with `@RestController` as it is going to respond to rest calls.
+- Annotate it with `@ControllerAdvice` as it allows it to perform few common functions across controllers like
+  - Adding custom model fields
+  - Exception Handling
+- Here we are trying to perform exception handling.
+- We need to override `handleException` method to respond for all exceptions
+- To respond for specific exception annotate it with `@ExceptionHandler` and mention the exception that you want to respond for.
+- Example method mentioned below.
+
+```java
+@ExceptionHandler(Exception.class)
+    public final ResponseEntity<Object> handleAllException(Exception ex, WebRequest request) throws Exception {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                new Date(), ex.getMessage(), request.getDescription(false)
+        );
+        return new ResponseEntity(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+```
+
+- Every exception will return an internal server http status code with the Exception Response object.
+- Example for Handling `UserNotFoundException` is mentioned below
+
+```java
+@ExceptionHandler(UserNotFoundException.class)
+    public final ResponseEntity<Object> userNotFoundException(
+            UserNotFoundException ex, WebRequest request
+    ) throws Exception {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                new Date(), ex.getMessage(), request.getDescription(false)
+        );
+        return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
     }
 ```
