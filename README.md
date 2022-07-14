@@ -14,6 +14,7 @@
     - [Custom exception handling](#custom-exception-handling)
     - [Custom exception object for all exceptions](#custom-exception-object-for-all-exceptions)
     - [Delete a user](#delete-a-user)
+    - [Validations](#validations)
 
 # springboot springcloud alpha
 
@@ -431,3 +432,52 @@ public User deleteUser(int id) {
         }
     }
 ```
+
+### Validations
+
+- To add simple validations on our data objects we can use the validation api.
+- To get validation api add the following dependency under dependencies in `pom.xml`
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+```
+
+- Now, validations can be applied on the object.
+- `@size` validation can be used to pose restrictions on strings.
+- maximum number of characters and minimum number of characters.
+- When this constraints are not met we can give a proper message.
+- `@past` annotation can be used on date, to make sure the date is in past.
+- We can use many other validations information available at [javax.validation.contraints](https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/package-summary.html)
+
+```java
+@Size(min = 2, max = 50, message = "Number of characters in name should be minimum 2 and maximum 50")
+private String name;
+@Past(message = "Birthday should be in past.")
+private Date birthDate;
+
+```
+
+- To run this validations on the request object use `@Valid` annotation in the controller parameter for request body.
+
+```java
+public ResponseEntity createUser(@Valid @RequestBody User user)
+```
+
+- This will validate and return bad request when conditions are not met.
+- To get a proper message we need to override the `handleMethodArgumentNotValid` method from `` class.
+- In the custom exception class we can add the below method.
+
+```java
+@Override
+    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                new Date(), ex.getBindingResult().toString(), request.getDescription(false)
+        );
+        return new ResponseEntity(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+```
+
+- To give a specific message we can iterate through `BindingResult` and give a specific message.
