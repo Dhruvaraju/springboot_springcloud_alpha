@@ -13,6 +13,7 @@
     - [Creating a controller class for the same.](#creating-a-controller-class-for-the-same)
     - [Custom exception handling](#custom-exception-handling)
     - [Custom exception object for all exceptions](#custom-exception-object-for-all-exceptions)
+    - [Delete a user](#delete-a-user)
 
 # springboot springcloud alpha
 
@@ -384,5 +385,49 @@ public class UserNotFoundException extends RuntimeException {
                 new Date(), ex.getMessage(), request.getDescription(false)
         );
         return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
+    }
+```
+
+### Delete a user
+
+- Iterate through the list and remove the user with provided id
+- Use Iterator to remove it.
+
+```java
+public User deleteUser(int id) {
+        Iterator<User> iterator = users.iterator();
+        while(iterator.hasNext()){
+            User user = iterator.next();
+            if(user.getId() == id){
+                iterator.remove();
+                return user;
+            }
+        }
+        return null;
+    }
+```
+
+- in controller we can add a method for delete uri
+
+```java
+@RequestMapping(path = "/users/{id}", method = RequestMethod.DELETE)
+    public User deleteUser(@PathVariable int id) {
+        User user = userService.deleteUser(id);
+        if (null == user){
+            throw  new UserNotFoundException("Id: " + id);
+        }
+        return user;
+    }
+```
+
+- Generally we will not send the user details while deleting so we can update the above method as below.
+
+```java
+@RequestMapping(path = "/users/{id}", method = RequestMethod.DELETE)
+    public void deleteUser(@PathVariable int id) {
+        User user = userService.deleteUser(id);
+        if (null == user){
+            throw  new UserNotFoundException("Id: " + id);
+        }
     }
 ```

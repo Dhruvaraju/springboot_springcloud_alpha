@@ -30,6 +30,14 @@ public class UserController {
         return user;
     }
 
+    @RequestMapping(path = "/users/{id}", method = RequestMethod.DELETE)
+    public void deleteUser(@PathVariable int id) {
+        User user = userService.deleteUser(id);
+        if (null == user){
+            throw  new UserNotFoundException("Id: " + id);
+        }
+    }
+
     @RequestMapping(path = "/users", method = RequestMethod.POST)
     public ResponseEntity createUser(@RequestBody User user) {
         User savedUser = userService.save(user);
