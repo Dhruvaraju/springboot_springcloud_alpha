@@ -1,7 +1,8 @@
 package com.springexample.initialexample.user;
 
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -23,19 +24,23 @@ public class UserController {
     }
 
     @RequestMapping(path = "/users/{id}", method = RequestMethod.GET)
-    public User findUser(@PathVariable int id) {
+    public EntityModel<User> findUser(@PathVariable int id) {
         User user = userService.findOne(id);
-        if (null == user){
-            throw  new UserNotFoundException("Id: " + id);
+        if (null == user) {
+            throw new UserNotFoundException("Id: " + id);
         }
-        return user;
+        EntityModel<User> resource = EntityModel.of(user);
+        WebMvcLinkBuilder userLink =
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).fetchAllUsers());
+        resource.add(userLink.withRel("all-users"));
+        return resource;
     }
 
     @RequestMapping(path = "/users/{id}", method = RequestMethod.DELETE)
     public void deleteUser(@PathVariable int id) {
         User user = userService.deleteUser(id);
-        if (null == user){
-            throw  new UserNotFoundException("Id: " + id);
+        if (null == user) {
+            throw new UserNotFoundException("Id: " + id);
         }
     }
 

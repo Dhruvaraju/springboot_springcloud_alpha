@@ -15,6 +15,7 @@
     - [Custom exception object for all exceptions](#custom-exception-object-for-all-exceptions)
     - [Delete a user](#delete-a-user)
     - [Validations](#validations)
+    - [Implementing HATEOAS](#implementing-hateoas)
 
 # springboot springcloud alpha
 
@@ -481,3 +482,36 @@ public ResponseEntity createUser(@Valid @RequestBody User user)
 ```
 
 - To give a specific message we can iterate through `BindingResult` and give a specific message.
+
+### Implementing HATEOAS
+
+- HATEOAS: Hypermedia as engine of application state.
+- To implement Hateoas add the following dependency to pom.
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-hateoas</artifactId>
+</dependency>
+```
+
+- With help of Hateoas we can return location of resources in request.
+- Either we can create a new field in the entity objects or we can make use of `EntityModel`
+- Using entityModel is preferred as we can create links dynamically.
+- To add a link use WebMvcLinkBuilder
+
+```java
+@RequestMapping(path = "/users/{id}", method = RequestMethod.GET)
+    public EntityModel<User> findUser(@PathVariable int id) {
+        User user = userService.findOne(id);
+        if (null == user) {
+            throw new UserNotFoundException("Id: " + id);
+        }
+        EntityModel<User> resource = EntityModel.of(user);
+        WebMvcLinkBuilder userLink =
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(this.getClass()).fetchAllUsers());
+        resource.add(userLink.withRel("all-users"));
+        return resource;
+    }
+
+```
