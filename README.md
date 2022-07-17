@@ -513,5 +513,7 @@ public ResponseEntity createUser(@Valid @RequestBody User user)
         resource.add(userLink.withRel("all-users"));
         return resource;
     }
-
 ```
+
+- In the above code using linkTo and methodOn will not work when we use them directly we need to use them as ` WebMvcLinkBuilder.linkTo` and `WebMvcLinkBuilder.methodOn`.
+- Hateoas is implemented when frontend needs to have use cases to redirect the use to newly created resource.
