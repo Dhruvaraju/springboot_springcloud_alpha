@@ -556,3 +556,4 @@ public String helloWorldI18n(
         return messageSource.getMessage("morning.greeting",null,locale);
     }
 ```
+> To get system locale use `LocaleContextHolder.getLocale()`
