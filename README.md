@@ -16,6 +16,7 @@
     - [Delete a user](#delete-a-user)
     - [Validations](#validations)
     - [Implementing HATEOAS](#implementing-hateoas)
+    - [Internationalizing Api](#internationalizing-api)
 
 # springboot springcloud alpha
 
@@ -517,3 +518,41 @@ public ResponseEntity createUser(@Valid @RequestBody User user)
 
 - In the above code using linkTo and methodOn will not work when we use them directly we need to use them as ` WebMvcLinkBuilder.linkTo` and `WebMvcLinkBuilder.methodOn`.
 - Hateoas is implemented when frontend needs to have use cases to redirect the use to newly created resource.
+
+### Internationalizing Api
+
+- Internationalizing or i18n is making your api respond with content different languages.
+- We can make use of `messages.properties`
+- Different messages can be fetched with help of `MessageSource`
+
+```java
+import org.springframework.context.MessageSource;
+@Autowired
+    private MessageSource messageSource;
+```
+
+- Create multiple messages with locale codes example
+
+```
+#messages.properties
+morning.greeting=Good Morning
+```
+
+For Dutch:
+
+```
+#messages_nl.properties
+morning.greeting=Goedemorgen
+```
+
+- Fetch these messages with help of below
+- Send the 2 character locale code as part of header parameter `Accept-Language`
+
+```java
+@RequestMapping(path = "/hello-world/i18n", method = RequestMethod.GET)
+public String helloWorldI18n(
+     @RequestHeader(name = "Accept-Language")Locale locale
+    ){
+        return messageSource.getMessage("morning.greeting",null,locale);
+    }
+```
